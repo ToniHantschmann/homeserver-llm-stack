@@ -59,22 +59,23 @@ Full write-up with raw data: **[BENCHMARKS.md](BENCHMARKS.md)**.
 | **gemma4:e4b** | **10/10** | **3.0 s** | **19.7 t/s** | **short, correct, useful** |
 | qwen3.5:9b | 10/10 | 17.0 s | 6.4 t/s | detailed, one logic error |
 
-Things I learned along the way:
+Notes:
 
-- **Gemma 4 E4B is 2× faster under Ollama than under plain llama.cpp.** The model
-  ships a small MTP-style draft head (`gemma4-assistant`, 98 MB) that Ollama uses
-  for speculative decoding automatically (58 % acceptance, 2.73 tokens/step).
-  `llama-server -md … --spec-type draft-mtp` reproduces the same 19.5 t/s.
-- **Generation is memory-bandwidth bound.** 4, 6, 10 or 12 threads give the same
-  tokens/s; core pinning does nothing; the Intel iGPU via Vulkan is *slower* than the CPU.
-- **Thinking pays off only for batch jobs.** The weekly review with `think: true`
-  takes ~60 s instead of ~25 s, but is the only variant that gives a real
-  "carry these tasks over" recommendation without inventing anything.
-- **Ollama keeps computing after the client times out.** One abandoned 9 B request
-  blocked the single inference slot for ~15 minutes, for *every* alias. Slow models
-  are a liveness risk for the whole stack, not just for themselves.
-- **In production:** daily summaries take a median of **7.6 s** end to end, weekly
-  reviews with thinking ~62 s (LiteLLM request log, first days of operation).
+- Gemma 4 E4B runs about twice as fast under Ollama as under plain llama.cpp. The
+  model includes a small draft head (`gemma4-assistant`, 98 MB), which Ollama uses
+  for speculative decoding (58 % acceptance, 2.73 tokens per step). With
+  `llama-server -md … --spec-type draft-mtp`, llama.cpp reaches the same 19.5 t/s.
+- Generation speed is limited by memory bandwidth. 4, 6, 10 and 12 threads give the
+  same tokens/s, core pinning makes no difference, and the Intel iGPU (Vulkan) is
+  slower than the CPU.
+- Thinking is only used for the weekly review. With `think: true` it takes ~60 s
+  instead of ~25 s; in testing it was the only variant that recommended which tasks
+  to carry over without adding invented ones.
+- Ollama finishes a request even after the client has timed out. One abandoned 9 B
+  request occupied the single inference slot for ~15 minutes, which blocked all
+  aliases. The slower models therefore have no alias.
+- In the first days of operation, daily summaries took a median of 7.6 s end to end
+  and weekly reviews with thinking ~62 s (from the LiteLLM request log).
 
 ## Design decisions
 
