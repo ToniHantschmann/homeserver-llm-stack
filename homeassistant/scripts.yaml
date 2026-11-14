@@ -1,0 +1,106 @@
+assistent_bericht:
+  alias: Assistent - Bericht erstellen
+  icon: mdi:robot-outline
+  mode: queued
+  max: 3
+  fields:
+    art:
+      name: Art
+      description: tag = Tageszusammenfassung, woche = Wochenbericht
+      required: true
+      default: tag
+      selector:
+        select:
+          options:
+            - tag
+            - woche
+    push:
+      name: Push senden
+      default: true
+      selector:
+        boolean:
+  sequence:
+    - variables:
+        bericht_art: "{{ art if art is defined else 'tag' }}"
+        mit_push: "{{ push if push is defined else true }}"
+    - action: rest_command.assistent_bericht
+      data:
+        art: "{{ bericht_art }}"
+      response_variable: antwort
+      continue_on_error: true
+    - if:
+        - condition: template
+          value_template: "{{ antwort is defined and antwort.status == 200 and antwort.content.text is defined }}"
+      then:
+        - action: script.assistent_bericht_zustellen
+          data:
+            art: "{{ bericht_art }}"
+            ergebnis: "{{ antwort.content }}"
+            push: "{{ mit_push }}"
+      else:
+        - delay: "00:02:00"
+        - action: rest_command.assistent_bericht
+          data:
+            art: "{{ bericht_art }}"
+          response_variable: antwort2
+          continue_on_error: true
+        - if:
+            - condition: template
+              value_template: "{{ antwort2 is defined and antwort2.status == 200 and antwort2.content.text is defined }}"
+          then:
+            - action: script.assistent_bericht_zustellen
+              data:
+                art: "{{ bericht_art }}"
+                ergebnis: "{{ antwort2.content }}"
+                push: "{{ mit_push }}"
+          else:
+            - action: notify.mobile_app_phone
+              data:
+                title: Assistent - Bericht fehlgeschlagen
+                message: >-
+                  {{ 'Tageszusammenfassung' if bericht_art == 'tag' else 'Wochenbericht' }} kam
+                  zweimal nicht an
+                  ({{ 'HTTP ' ~ antwort2.status if antwort2 is defined else 'keine Antwort / Timeout' }}).
+                  Pruefen: docker logs assistent
+                data:
+                  tag: "assistent_{{ bericht_art }}"
+
+# Legt den Bericht in sensor.assistent_tagesbericht / _wochenbericht ab
+# (Event -> Trigger-Template-Sensor in configuration.yaml) und schickt
+# optional den Push, der per Tipp das Dashboard "Assistent" oeffnet.
+# None-Werte werden zu '' - ein gerendertes "None" waere sonst ein String.
+assistent_bericht_zustellen:
+  alias: Assistent - Bericht ablegen und pushen
+  icon: mdi:send
+  mode: parallel
+  fields:
+    art:
+      required: true
+    ergebnis:
+      description: content-Objekt der API-Antwort (titel, text, datum, fallback, modell, sekunden)
+      required: true
+    push:
+      default: true
+  sequence:
+    - event: assistent_bericht_neu
+      event_data:
+        art: "{{ art }}"
+        titel: "{{ ergebnis.titel }}"
+        text: "{{ ergebnis.text }}"
+        datum: "{{ ergebnis.datum }}"
+        fallback: "{{ ergebnis.fallback or '' }}"
+        modell: "{{ ergebnis.modell or '' }}"
+        sekunden: "{{ ergebnis.sekunden or 0 }}"
+    - if:
+        - condition: template
+          value_template: "{{ push is not defined or push }}"
+      then:
+        - action: notify.mobile_app_phone
+          data:
+            title: >-
+              {{ ergebnis.titel }}{{ ' (Fakten)' if ergebnis.fallback else '' }}
+            message: "{{ ergebnis.text }}"
+            data:
+              tag: "assistent_{{ art }}"
+              channel: Assistent
+              clickAction: "/dashboard-assistent/heute"

@@ -1,0 +1,214 @@
+# LLM-Stack: lokale Inferenz + (spaeter) Gateway, Vault-Bridge, Assistent.
+# Ueberblick und Messwerte: README.md und BENCHMARKS.md im Repo-Wurzelverzeichnis.
+#
+# Phase 1: nur Ollama. LiteLLM, livesync-bridge, Wyoming und der Assistent
+# kommen als weitere Services in genau diese Datei.
+#
+# Zugriff: alles nur auf 127.0.0.1. Ollama hat KEINE Authentifizierung -
+# erreichbar fuer jeden lokalen User (auch dev) und fuer Container mit
+# network_mode: host (Home Assistant). Ins Tailnet kommt spaeter nur LiteLLM
+# (mit Master-Key), nicht Ollama selbst.
+
+services:
+  ollama:
+    # Versions-Pin: Ollama veroeffentlicht mehrmals pro Woche, ein Modell-Format-
+    # oder Template-Wechsel soll nicht unbeaufsichtigt per Watchtower kommen.
+    image: ollama/ollama:0.40.16
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      # Modelle auf /mnt/data (1,1 TB frei), NICHT auf / (nur ~32 GB frei).
+      # Bewusst nicht im Backup: Modelle sind jederzeit neu ladbar.
+      - /mnt/data/llm/ollama:/root/.ollama
+    environment:
+      - TZ=Europe/Berlin
+      # Nur ein Modell gleichzeitig im RAM, nach 5 min ohne Anfrage entladen
+      # (Minecraft belegt allein ~9 GB, Swap ist schon in Benutzung).
+      - OLLAMA_MAX_LOADED_MODELS=1
+      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_CONTEXT_LENGTH=4096
+      # Keine Ollama-Cloud-Modelle: Cloud nur explizit ueber LiteLLM (Plan: Datenschutz).
+      - OLLAMA_NO_CLOUD=1
+    # Harte Obergrenze: reicht fuer das 9B-Referenzmodell (~6-7 GB + Kontext).
+    # Nach Phase 1 auf den tatsaechlichen Bedarf des Betriebsmodells senken.
+    mem_limit: 10g
+    memswap_limit: 10g
+    networks:
+      - llm
+
+  # --- Phase 2: Gateway ------------------------------------------------------
+  litellm:
+    # LTS-Linie, gepinnt. Release pruefen mit:
+    #   cosign verify --key <cosign.pub aus dem Release> ghcr.io/berriai/litellm:<tag>
+    image: ghcr.io/berriai/litellm:v1.108.7
+    container_name: litellm
+    restart: unless-stopped
+    depends_on:
+      - litellm-db
+      - ollama
+    ports:
+      # Ins Tailnet per tailscale-serve-litellm (Port 8454), nicht ins LAN.
+      - "127.0.0.1:4000:4000"
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      - TZ=Europe/Berlin
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_SALT_KEY=${LITELLM_SALT_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - DATABASE_URL=postgresql://litellm:${LITELLM_DB_PASSWORD}@litellm-db:5432/litellm
+      - STORE_MODEL_IN_DB=False
+      # Preisliste lokal aus dem Image statt beim Start aus dem Internet laden
+      - LITELLM_LOCAL_MODEL_COST_MAP=True
+    mem_limit: 1536m
+    networks:
+      - llm
+
+  litellm-db:
+    # Nur Request-Logs (Latenz, Tokens, Kosten) - verlierbar, daher nicht im
+    # Backup und nicht von Watchtower ausgenommen (Major ist gepinnt).
+    image: postgres:17
+    container_name: litellm-db
+    restart: unless-stopped
+    volumes:
+      - /mnt/data/llm/litellm-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=litellm
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=${LITELLM_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - llm
+
+  # --- Phase 3: Vault-Zugriff ------------------------------------------------
+  # livesync-bridge spiegelt den Obsidian-Vault (CouchDB obsidian-vault, E2EE)
+  # als normalen Ordner nach /mnt/data/llm/vault. ACHTUNG: Die Bridge
+  # synchronisiert IMMER in beide Richtungen und gibt Loeschungen weiter -
+  # was in /mnt/data/llm/vault geaendert/geloescht wird, landet auf allen
+  # Geraeten. Schreibregel (Plan): nur anhaengen oder eine Checkbox aendern.
+  # Getestet 2026-11-13 gegen eine Replik (setup/02-*), umgestellt per setup/03-*.
+  livesync-bridge:
+    # Lokal gebaut aus github.com/vrtmrz/livesync-bridge, Commit 1c25230
+    # (2026-11-04, commonlib 0.3.1: E2EE v2 + v3-rabin-karp). Kein offizielles
+    # Image, kein Release - Quelle liegt gepinnt in ./livesync-bridge/src.
+    # Update = bewusst: git fetch && git checkout <commit>, Tag hier anpassen,
+    # docker compose build livesync-bridge - vorher wieder gegen eine Replik testen.
+    build: ./livesync-bridge/src
+    image: localhost/livesync-bridge:1c25230
+    container_name: livesync-bridge
+    restart: unless-stopped
+    # Secrets NUR in vault.env, nicht in .env: so sieht weder LiteLLM die
+    # Passphrase noch die Bridge den Master-Key. CouchDB-Konto ist der
+    # Nicht-Admin "livesync-bridge" (nur Mitglied von obsidian-vault).
+    env_file: vault.env
+    environment:
+      - TZ=Europe/Berlin
+      - LSB_CONFIG=/tmp/lsb-config.json
+    # Config wird beim Start aus vault.env erzeugt (gen-config.ts), dann Bridge.
+    command: ["sh", "-c", "deno run --allow-env --allow-write=/tmp /opt/gen-config.ts && exec deno task run"]
+    volumes:
+      - ./livesync-bridge/gen-config.ts:/opt/gen-config.ts:ro
+      # Vault als normaler Ordner (Owner 1993 = deno im Image). Abgeleitete
+      # Kopie, nicht im Backup - die Quelle ist die CouchDB.
+      - /mnt/data/llm/vault:/app/data/vault
+      # Deno-localStorage = Resume-Positionen/Offline-Scan-Stand. NIE leeren,
+      # solange /mnt/data/llm/vault Dateien enthaelt: sonst haelt der
+      # Offline-Scan den ganzen Ordner fuer neu und laedt ihn hoch.
+      - /mnt/data/llm/livesync-bridge-state:/deno-dir/location_data
+    healthcheck:
+      # Bridge schreibt alle 10 s /tmp/lsb-health.json; aelter als 60 s = haengt.
+      test: ["CMD", "deno", "eval", "const h=JSON.parse(Deno.readTextFileSync('/tmp/lsb-health.json')); if (Date.now()-h.ts>60000) Deno.exit(1)"]
+      interval: 60s
+      timeout: 15s
+      start_period: 120s
+      retries: 3
+    mem_limit: 1g
+    labels:
+      - com.centurylinklabs.watchtower.enable=false
+    networks:
+      # Nur obsidian-network: spricht ausschliesslich mit obsidian-livesync.
+      - obsidian
+
+  # --- Phase 5: Zustellung ---------------------------------------------------
+  # HTTP-API des Assistenten (Code: ./assistent, eigenes Git-Repo, README dort).
+  # Home Assistant (network_mode: host) holt um 06:30 / So 19:00 per rest_command
+  # /zusammenfassung/tag|woche ab und schickt den Text als Push. Phase 6 nutzt
+  # zusaetzlich /tasks und /tasks/erledigt fuer die Sprachbefehle.
+  assistent:
+    build: ./assistent
+    image: localhost/assistent:phase5
+    container_name: assistent
+    restart: unless-stopped
+    # uid 1993 = Besitzer von /mnt/data/llm/vault (deno in livesync-bridge).
+    # Nur als 1993 darf der Assistent schreiben - und alles, was er schreibt,
+    # landet ueber die Bridge auf ALLEN Geraeten (Schreibregel: nur einfuegen
+    # oder eine Checkbox setzen, siehe assistent/README.md).
+    user: "1993:1993"
+    depends_on:
+      - litellm
+    ports:
+      # Nur localhost: HA erreicht das ueber network_mode: host. Bewusst NICHT
+      # im Tailnet - es gibt keinen Client ausser HA.
+      - "127.0.0.1:8100:8100"
+    # LITELLM_API_KEY (virtueller Key "assistent"), ASSISTENT_ICAL,
+    # ASSISTENT_API_TOKEN (Bearer-Token fuer HA, steht auch in HA secrets.yaml).
+    env_file: assistent/.env
+    environment:
+      - TZ=Europe/Berlin
+      - LITELLM_BASE_URL=http://litellm:4000/v1
+      - ASSISTENT_VAULT=/mnt/data/llm/vault
+      # Merkt sich gemachte Kalender-Vorschlaege, damit geloeschte nicht
+      # wiederkommen (POST /woche/vorbereiten, So 18:45 aus HA).
+      - ASSISTENT_ZUSTAND=/zustand
+      # Nur der Wochenbericht (Batch, So 19:00) mit Thinking: gleiches Modell
+      # (gemma4:e4b), ~60 s statt ~25 s, gibt dafuer einen echten Uebernahme-
+      # Vorschlag. Scheitert er, formuliert "assistent" neu (assistent/README.md).
+      - ASSISTENT_MODELL_WOCHE=assistent-gruendlich
+      - ASSISTENT_MAX_TOKENS_WOCHE=2500
+      - ASSISTENT_LLM_TIMEOUT_WOCHE=180
+    volumes:
+      # Gleicher Pfad wie auf dem Host, damit Logs und CLI dieselben Pfade zeigen
+      - /mnt/data/llm/vault:/mnt/data/llm/vault
+      # Named Volume, kein Bind-Mount: uebernimmt beim ersten Start Besitzer 1993
+      # aus dem Image (kein chown auf dem Host noetig). Bewusst nicht im Backup -
+      # geht es verloren, kommt hoechstens ein geloeschter Vorschlag einmal wieder.
+      - assistent-zustand:/zustand
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    labels:
+      # Lokal gebautes Image - Watchtower koennte es ohnehin nicht ziehen
+      - com.centurylinklabs.watchtower.enable=false
+    networks:
+      # Kein obsidian-network: der Assistent spricht nie mit der CouchDB,
+      # nur mit LiteLLM (llm) und per HTTPS mit Google (iCal).
+      - llm
+
+volumes:
+  assistent-zustand:
+    name: assistent-zustand
+
+networks:
+  obsidian:
+    name: obsidian-network
+    external: true
+  llm:
+    name: llm-network
+    # Feste /24 aus dem noch freien 172.23er-Block: deterministisch fuer
+    # LiteLLM/Assistent spaeter und spart den knappen Docker-Adresspool.
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24

@@ -1,0 +1,492 @@
+{
+  "zeit": "2026-11-13T00:11:57.516217",
+  "loadavg": [
+    "4.19",
+    "1.87",
+    "1.17"
+  ],
+  "modelle": {
+    "qwen3.5:2b": {
+      "tag_kalt": {
+        "load_s": 2.33,
+        "prompt_tokens": 417,
+        "prompt_tps": 166.9,
+        "gen_tokens": 96,
+        "gen_tps": 16.9,
+        "total_s": 10.51
+      },
+      "ram_geladen": "2.995GiB",
+      "tag_text": "Freitag, 13.11.2026: Termin heute bis 14:00 Uhr. Überfällig ist ein Mail an das Bürgeramt vom 10.11. Ein konkreter Vorschlag passt die Aufgabe \"Literaturübersicht Graphdatenbanken ergänzen\" in das freie Fenster von 14:30 bis 18:00, da diese Zeit nach dem Termin am Nachmittag frei ist.",
+      "tag_erfundene_uhrzeiten": [
+        "10:11"
+      ],
+      "tag_warm": {
+        "load_s": 0.0,
+        "prompt_tokens": 417,
+        "prompt_tps": 3907.0,
+        "gen_tokens": 63,
+        "gen_tps": 16.7,
+        "total_s": 3.89
+      },
+      "tag_text_2": "Freitag, 13.11.2026: Vorlesung Datenbanksysteme, Überfällig Mail an Bürgeramt, Vorschlag: Aufgabe \"Pfeile beim Bogenladen bestellen\" passt ins freie Fenster 14:30-18:00",
+      "tools_treffer": "8/10",
+      "tools_latenz_median_s": 5.25,
+      "tools": [
+        {
+          "satz": "Füge Steuererklärung abgeben zu meiner Wochenliste hinzu",
+          "ok": true,
+          "info": "{\"text\": \"Steuererklärung abgeben\"}",
+          "latenz_s": 5.14,
+          "content": ""
+        },
+        {
+          "satz": "Erinner mich, bis Freitag die Steuer abzugeben",
+          "ok": true,
+          "info": "{\"text\": \"Steuer abgeben bis Freitag\", \"wann\": \"Freitag\"}",
+          "latenz_s": 5.87,
+          "content": ""
+        },
+        {
+          "satz": "Ich muss morgen noch Pfeile beim Bogenladen bestellen",
+          "ok": true,
+          "info": "{\"text\": \"Pfeile beim Bogenladen bestellen\", \"wann\": \"morgen\"}",
+          "latenz_s": 5.98,
+          "content": ""
+        },
+        {
+          "satz": "Was steht heute an?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 4.06,
+          "content": ""
+        },
+        {
+          "satz": "Hake Wäsche waschen ab",
+          "ok": true,
+          "info": "{\"text\": \"Wäsche waschen\"}",
+          "latenz_s": 5.25,
+          "content": ""
+        },
+        {
+          "satz": "Die Bewerbung bei Beispiel GmbH ist erledigt",
+          "ok": true,
+          "info": "{\"text\": \"Bewerbung bei Beispiel GmbH\"}",
+          "latenz_s": 5.12,
+          "content": ""
+        },
+        {
+          "satz": "Setz Zahnarzttermin vereinbaren auf die Liste, spätestens nächsten Mittwoch",
+          "ok": false,
+          "info": "wann='morgen'",
+          "latenz_s": 7.02,
+          "content": ""
+        },
+        {
+          "satz": "Was habe ich heute noch vor?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 4.47,
+          "content": ""
+        },
+        {
+          "satz": "Ich hab das Paket zur Post gebracht",
+          "ok": false,
+          "info": "falsches Tool aufgabe_hinzufuegen",
+          "latenz_s": 5.14,
+          "content": ""
+        },
+        {
+          "satz": "Bis zum 20. November die Seminar-Folien fertig machen",
+          "ok": true,
+          "info": "{\"text\": \"Seminar-Folien bis zum 20. November fertigstellen\", \"wann\": \"20. November\"}",
+          "latenz_s": 6.66,
+          "content": ""
+        }
+      ]
+    },
+    "qwen3:4b-instruct": {
+      "tag_kalt": {
+        "load_s": 10.89,
+        "prompt_tokens": 442,
+        "prompt_tps": 79.8,
+        "gen_tokens": 97,
+        "gen_tps": 12.7,
+        "total_s": 24.07
+      },
+      "ram_geladen": "3.26GiB",
+      "tag_text": "Nächster Termin: 18:00-20:00 Bogentraining (Halle).  \nÜberfällig: Mail an Bürgeramt wegen Ummeldung (faellig war: 2026-11-10).  \nVorschlag: Die Literaturübersicht zu Graphdatenbanken kannst du im Zeitfenster von 11:45 bis 14:00 erledigen.",
+      "tag_erfundene_uhrzeiten": [],
+      "tag_warm": {
+        "load_s": 0.0,
+        "prompt_tokens": 442,
+        "prompt_tps": 5341.0,
+        "gen_tokens": 97,
+        "gen_tps": 12.5,
+        "total_s": 7.86
+      },
+      "tag_text_2": "Nächster Termin: 18:00-20:00 Bogentraining (Halle).  \nÜberfällig: Mail an Bürgeramt wegen Ummeldung (faellig war: 2026-11-10).  \nVorschlag: Die Literaturübersicht zu Graphdatenbanken kannst du im Zeitfenster von 11:45 bis 14:00 ergänzen.",
+      "tools_treffer": "7/10",
+      "tools_latenz_median_s": 3.57,
+      "tools": [
+        {
+          "satz": "Füge Steuererklärung abgeben zu meiner Wochenliste hinzu",
+          "ok": false,
+          "info": "wann erfunden: 'morgen'",
+          "latenz_s": 8.36,
+          "content": ""
+        },
+        {
+          "satz": "Erinner mich, bis Freitag die Steuer abzugeben",
+          "ok": true,
+          "info": "{\"text\": \"Steuer abgeben\", \"wann\": \"Freitag\"}",
+          "latenz_s": 3.28,
+          "content": ""
+        },
+        {
+          "satz": "Ich muss morgen noch Pfeile beim Bogenladen bestellen",
+          "ok": true,
+          "info": "{\"text\": \"Pfeile beim Bogenladen bestellen\", \"wann\": \"morgen\"}",
+          "latenz_s": 3.63,
+          "content": ""
+        },
+        {
+          "satz": "Was steht heute an?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 1.7,
+          "content": ""
+        },
+        {
+          "satz": "Hake Wäsche waschen ab",
+          "ok": false,
+          "info": "falsches Tool aufgabe_hinzufuegen",
+          "latenz_s": 3.19,
+          "content": ""
+        },
+        {
+          "satz": "Die Bewerbung bei Beispiel GmbH ist erledigt",
+          "ok": true,
+          "info": "{\"text\": \"Bewerbung bei Beispiel GmbH\"}",
+          "latenz_s": 2.63,
+          "content": ""
+        },
+        {
+          "satz": "Setz Zahnarzttermin vereinbaren auf die Liste, spätestens nächsten Mittwoch",
+          "ok": true,
+          "info": "{\"text\": \"Zahnarzttermin vereinbaren\", \"wann\": \"nächstes Mittwoch\"}",
+          "latenz_s": 3.98,
+          "content": ""
+        },
+        {
+          "satz": "Was habe ich heute noch vor?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 1.68,
+          "content": ""
+        },
+        {
+          "satz": "Ich hab das Paket zur Post gebracht",
+          "ok": false,
+          "info": "0 Tool-Calls",
+          "latenz_s": 6.39,
+          "content": "Das ist gut, aber ich kann keine Aufgaben auswerten oder überprüfen, wenn du keine spezifische Aufgabe oder Anfrage hast. Möchtest du z. B. eine Aufgabe hinzufügen oder eine bestehende als erledigt ma"
+        },
+        {
+          "satz": "Bis zum 20. November die Seminar-Folien fertig machen",
+          "ok": true,
+          "info": "{\"text\": \"Seminar-Folien fertig machen\", \"wann\": \"20. November\"}",
+          "latenz_s": 3.57,
+          "content": ""
+        }
+      ]
+    },
+    "qwen3.5:4b": {
+      "tag_kalt": {
+        "load_s": 5.62,
+        "prompt_tokens": 417,
+        "prompt_tps": 83.4,
+        "gen_tokens": 155,
+        "gen_tps": 11.4,
+        "total_s": 24.22
+      },
+      "ram_geladen": "3.634GiB",
+      "tag_text": "Der nächste Termin ist heute um 08:30 Uhr die Vorlesung zu Datenbanksysteme. Als nächstes führt Sie das Software-Praktikum online von 10:15 bis 11:45 Uhr ein. Die überfällige Mail an das Bürgeramt bezüglich der Ummeldung sollte dringend bearbeitet werden. Der freie Zeitraum zwischen 11:45 und 14:00 Uhr eignet sich gut, um die offenen Aufgaben zu bearbeiten. Ich empfehle Ihnen, die Seminarfolien zu Verteilte Systeme oder die Literaturübersicht zu Graphdatenbanken in diesem Fenster zu erledigen. Nach dem Telefonat mit der Küchenplanung können Sie bis zum Bogentraining abends weiterarbeiten.",
+      "tag_erfundene_uhrzeiten": [],
+      "tag_warm": {
+        "load_s": 0.0,
+        "prompt_tokens": 417,
+        "prompt_tps": 2851.5,
+        "gen_tokens": 156,
+        "gen_tps": 11.4,
+        "total_s": 13.81
+      },
+      "tag_text_2": "Heute beginnen Sie mit der Vorlesung über Datenbanksysteme um 08:30 Uhr, gefolgt vom Software-Praktikum bis 11:45 Uhr. Das überfällige Schreiben an das Bürgeramt bezüglich Ihrer Ummeldung muss dringend bearbeitet werden. Der nächste freie Zeitblock von 11:45 bis 14:00 Uhr eignet sich ideal für die Fertigstellung der Seminarfolien zu Verteilte Systeme, da dieser Termin am 16. November fällig ist. Zudem sollten Sie zwischen 14:30 und 18:00 Uhr das Geschenk für Lena und Tom besorgen, bevor Sie um 18:00 Uhr ins Bogentraining gehen.",
+      "tools_treffer": "9/10",
+      "tools_latenz_median_s": 9.69,
+      "tools": [
+        {
+          "satz": "Füge Steuererklärung abgeben zu meiner Wochenliste hinzu",
+          "ok": true,
+          "info": "{\"text\": \"Steuererklärung abgeben\"}",
+          "latenz_s": 8.7,
+          "content": ""
+        },
+        {
+          "satz": "Erinner mich, bis Freitag die Steuer abzugeben",
+          "ok": true,
+          "info": "{\"text\": \"Steuer abgeben\", \"wann\": \"Freitag\"}",
+          "latenz_s": 10.76,
+          "content": ""
+        },
+        {
+          "satz": "Ich muss morgen noch Pfeile beim Bogenladen bestellen",
+          "ok": true,
+          "info": "{\"text\": \"Pfeile beim Bogenladen bestellen\", \"wann\": \"morgen\"}",
+          "latenz_s": 10.24,
+          "content": ""
+        },
+        {
+          "satz": "Was steht heute an?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 8.02,
+          "content": ""
+        },
+        {
+          "satz": "Hake Wäsche waschen ab",
+          "ok": false,
+          "info": "falsches Tool aufgabe_hinzufuegen",
+          "latenz_s": 9.69,
+          "content": ""
+        },
+        {
+          "satz": "Die Bewerbung bei Beispiel GmbH ist erledigt",
+          "ok": true,
+          "info": "{\"text\": \"Bewerbung bei Beispiel GmbH\"}",
+          "latenz_s": 9.56,
+          "content": ""
+        },
+        {
+          "satz": "Setz Zahnarzttermin vereinbaren auf die Liste, spätestens nächsten Mittwoch",
+          "ok": true,
+          "info": "{\"text\": \"Zahnarzttermin vereinbaren\", \"wann\": \"nächsten Mittwoch\"}",
+          "latenz_s": 10.35,
+          "content": ""
+        },
+        {
+          "satz": "Was habe ich heute noch vor?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 6.89,
+          "content": ""
+        },
+        {
+          "satz": "Ich hab das Paket zur Post gebracht",
+          "ok": true,
+          "info": "{\"text\": \"das Paket zur Post bringen\"}",
+          "latenz_s": 9.42,
+          "content": ""
+        },
+        {
+          "satz": "Bis zum 20. November die Seminar-Folien fertig machen",
+          "ok": true,
+          "info": "{\"text\": \"Seminar-Folien fertig machen\", \"wann\": \"20. November\"}",
+          "latenz_s": 10.11,
+          "content": ""
+        }
+      ]
+    },
+    "gemma4:e4b": {
+      "tag_kalt": {
+        "load_s": 5.69,
+        "prompt_tokens": 414,
+        "prompt_tps": 132.2,
+        "gen_tokens": 104,
+        "gen_tps": 19.7,
+        "total_s": 14.1
+      },
+      "ram_geladen": "6.704GiB",
+      "tag_text": "Dein nächster Termin ist das Telefonat Küchenplanung Beispiel GmbH. Du hast außerdem die Mail an das Bürgeramt wegen der Ummeldung überfällig. Nutze das Zeitfenster von 11:45 bis 14:00, um die Seminar-Folien Verteilte Systeme fertig zu machen. Das Zeitfenster von 14:30 bis 18:00 eignet sich gut, um die Literaturübersicht Graphdatenbanken zu ergänzen.",
+      "tag_erfundene_uhrzeiten": [],
+      "tag_warm": {
+        "load_s": 0.0,
+        "prompt_tokens": 414,
+        "prompt_tps": 2238.2,
+        "gen_tokens": 125,
+        "gen_tps": 18.7,
+        "total_s": 6.87
+      },
+      "tag_text_2": "Dein nächster Termin ist das Software-Praktikum um 10:15 Uhr. Bitte beachte, dass die Mail an das Bürgeramt wegen der Ummeldung überfällig ist. Du hast Zeitfenster von 11:45 bis 14:00 und von 14:30 bis 18:00. Nutze das Zeitfenster von 11:45 bis 14:00, um die überfällige Mail zu versenden. Danach könntest du die Seminar-Folien für Verteilte Systeme fertigstellen.",
+      "tools_treffer": "10/10",
+      "tools_latenz_median_s": 3.06,
+      "tools": [
+        {
+          "satz": "Füge Steuererklärung abgeben zu meiner Wochenliste hinzu",
+          "ok": true,
+          "info": "{\"text\": \"Steuererklärung abgeben\"}",
+          "latenz_s": 2.83,
+          "content": ""
+        },
+        {
+          "satz": "Erinner mich, bis Freitag die Steuer abzugeben",
+          "ok": true,
+          "info": "{\"text\": \"Steuer abgeben\", \"wann\": \"Freitag\"}",
+          "latenz_s": 3.06,
+          "content": ""
+        },
+        {
+          "satz": "Ich muss morgen noch Pfeile beim Bogenladen bestellen",
+          "ok": true,
+          "info": "{\"text\": \"Pfeile beim Bogenladen bestellen\", \"wann\": \"morgen\"}",
+          "latenz_s": 3.21,
+          "content": ""
+        },
+        {
+          "satz": "Was steht heute an?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 2.39,
+          "content": ""
+        },
+        {
+          "satz": "Hake Wäsche waschen ab",
+          "ok": true,
+          "info": "{\"text\": \"Wäsche waschen\"}",
+          "latenz_s": 2.81,
+          "content": ""
+        },
+        {
+          "satz": "Die Bewerbung bei Beispiel GmbH ist erledigt",
+          "ok": true,
+          "info": "{\"text\": \"Bewerbung bei Beispiel GmbH\"}",
+          "latenz_s": 2.95,
+          "content": ""
+        },
+        {
+          "satz": "Setz Zahnarzttermin vereinbaren auf die Liste, spätestens nächsten Mittwoch",
+          "ok": true,
+          "info": "{\"text\": \"Zahnarzttermin vereinbaren\", \"wann\": \"nächsten Mittwoch\"}",
+          "latenz_s": 3.38,
+          "content": ""
+        },
+        {
+          "satz": "Was habe ich heute noch vor?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 2.73,
+          "content": ""
+        },
+        {
+          "satz": "Ich hab das Paket zur Post gebracht",
+          "ok": true,
+          "info": "{\"text\": \"Das Paket zur Post bringen\"}",
+          "latenz_s": 3.16,
+          "content": ""
+        },
+        {
+          "satz": "Bis zum 20. November die Seminar-Folien fertig machen",
+          "ok": true,
+          "info": "{\"text\": \"Seminar-Folien fertig machen\", \"wann\": \"20. November\"}",
+          "latenz_s": 3.58,
+          "content": ""
+        }
+      ]
+    },
+    "qwen3.5:9b": {
+      "tag_kalt": {
+        "load_s": 6.37,
+        "prompt_tokens": 417,
+        "prompt_tps": 42.3,
+        "gen_tokens": 179,
+        "gen_tps": 6.4,
+        "total_s": 44.23
+      },
+      "ram_geladen": "6.702GiB",
+      "tag_text": "Dein nächster Termin ist heute um 18:00 Uhr das Bogentraining in der Halle. Du hast eine überfällige Mail an das Bürgeramt wegen deiner Ummeldung aus dem 10. November noch nicht erledigt. Das Geschenk für Lena und Tom muss bis zum morgigen Tag besorgt werden, da es dann schon überfällig ist. Die Pfeile beim Bogenladen kannst du gerne in die freie Zeit zwischen 14:30 und 18:00 Uhr einplanen. Die Seminar-Folien zu Verteilte Systeme und die Literaturliste zu Graphdatenbanken passen gut in das längere Zeitfenster von 11:45 bis 14:00 Uhr. Du hast diese Woche bereits 5 von 11 Aufgaben erledigt, was einen guten Fortschritt darstellt.",
+      "tag_erfundene_uhrzeiten": [],
+      "tag_warm": {
+        "load_s": 0.0,
+        "prompt_tokens": 417,
+        "prompt_tps": 1907.8,
+        "gen_tokens": 193,
+        "gen_tps": 6.4,
+        "total_s": 30.39
+      },
+      "tag_text_2": "Dein nächster Termin ist heute um 08:30 Uhr die Vorlesung zu Datenbanksysteme im Raum B 101. Danach folgt das Gruppentreffen für das Software-Praktikum online zwischen 10:15 und 11:45 Uhr. Ein Telefonat zur Küchenplanung Beispiel GmbH steht um 14:00 Uhr an, gefolgt von Bogentraining in der Halle von 18:00 bis 20:00 Uhr. Aktuell ist die Mail an das Bürgeramt wegen deiner Ummeldung überfällig, da sie ursprünglich am 10. November fällig war. Als konkreter Vorschlag solltest du die Literaturübersicht zum Graphdatenbanken in das Zeitfenster von 14:30 bis 18:00 Uhr einplanen, da diese Aufgabe weniger Struktur benötigt als der Bogenbesuch.",
+      "tools_treffer": "10/10",
+      "tools_latenz_median_s": 17.64,
+      "tools": [
+        {
+          "satz": "Füge Steuererklärung abgeben zu meiner Wochenliste hinzu",
+          "ok": true,
+          "info": "{\"text\": \"Steuererklärung abgeben\"}",
+          "latenz_s": 17.64,
+          "content": ""
+        },
+        {
+          "satz": "Erinner mich, bis Freitag die Steuer abzugeben",
+          "ok": true,
+          "info": "{\"text\": \"Steuer abgeben\", \"wann\": \"Freitag\"}",
+          "latenz_s": 19.41,
+          "content": ""
+        },
+        {
+          "satz": "Ich muss morgen noch Pfeile beim Bogenladen bestellen",
+          "ok": true,
+          "info": "{\"text\": \"Pfeile beim Bogenladen bestellen\", \"wann\": \"morgen\"}",
+          "latenz_s": 17.89,
+          "content": ""
+        },
+        {
+          "satz": "Was steht heute an?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 14.61,
+          "content": ""
+        },
+        {
+          "satz": "Hake Wäsche waschen ab",
+          "ok": true,
+          "info": "{\"text\": \"Wäsche waschen\"}",
+          "latenz_s": 16.9,
+          "content": ""
+        },
+        {
+          "satz": "Die Bewerbung bei Beispiel GmbH ist erledigt",
+          "ok": true,
+          "info": "{\"text\": \"Bewerbung bei Beispiel GmbH\"}",
+          "latenz_s": 15.35,
+          "content": ""
+        },
+        {
+          "satz": "Setz Zahnarzttermin vereinbaren auf die Liste, spätestens nächsten Mittwoch",
+          "ok": true,
+          "info": "{\"text\": \"Zahnarzttermin vereinbaren\", \"wann\": \"nächsten Mittwoch\"}",
+          "latenz_s": 20.32,
+          "content": ""
+        },
+        {
+          "satz": "Was habe ich heute noch vor?",
+          "ok": true,
+          "info": "{}",
+          "latenz_s": 14.48,
+          "content": ""
+        },
+        {
+          "satz": "Ich hab das Paket zur Post gebracht",
+          "ok": true,
+          "info": "{\"text\": \"Paket zur Post bringen\"}",
+          "latenz_s": 16.0,
+          "content": ""
+        },
+        {
+          "satz": "Bis zum 20. November die Seminar-Folien fertig machen",
+          "ok": true,
+          "info": "{\"text\": \"Seminar-Folien fertig machen\", \"wann\": \"20. November\"}",
+          "latenz_s": 20.38,
+          "content": ""
+        }
+      ]
+    }
+  }
+}

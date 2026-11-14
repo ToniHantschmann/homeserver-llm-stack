@@ -1,0 +1,9 @@
+# qwen3.5:9b
+
+## Tageszusammenfassung (Lauf 1)
+Dein nächster Termin ist heute um 18:00 Uhr das Bogentraining in der Halle. Du hast eine überfällige Mail an das Bürgeramt wegen deiner Ummeldung aus dem 10. November noch nicht erledigt. Das Geschenk für Lena und Tom muss bis zum morgigen Tag besorgt werden, da es dann schon überfällig ist. Die Pfeile beim Bogenladen kannst du gerne in die freie Zeit zwischen 14:30 und 18:00 Uhr einplanen. Die Seminar-Folien zu Verteilte Systeme und die Literaturliste zu Graphdatenbanken passen gut in das längere Zeitfenster von 11:45 bis 14:00 Uhr. Du hast diese Woche bereits 5 von 11 Aufgaben erledigt, was einen guten Fortschritt darstellt.
+
+## Tageszusammenfassung (Lauf 2)
+Dein nächster Termin ist heute um 08:30 Uhr die Vorlesung zu Datenbanksysteme im Raum B 101. Danach folgt das Gruppentreffen für das Software-Praktikum online zwischen 10:15 und 11:45 Uhr. Ein Telefonat zur Küchenplanung Beispiel GmbH steht um 14:00 Uhr an, gefolgt von Bogentraining in der Halle von 18:00 bis 20:00 Uhr. Aktuell ist die Mail an das Bürgeramt wegen deiner Ummeldung überfällig, da sie ursprünglich am 10. November fällig war. Als konkreter Vorschlag solltest du die Literaturübersicht zum Graphdatenbanken in das Zeitfenster von 14:30 bis 18:00 Uhr einplanen, da diese Aufgabe weniger Struktur benötigt als der Bogenbesuch.
+
+Erfundene Uhrzeiten: keine

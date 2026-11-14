@@ -1,0 +1,105 @@
+# Ausschnitt aus configuration.yaml (Home Assistant): Assistent-Integration.
+# Token steht in secrets.yaml als  assistent_api_auth: "Bearer <ASSISTENT_API_TOKEN>"
+
+# LLM-Assistent (~/docker/llm-stack, Container "assistent", nur 127.0.0.1:8100 -
+# HA erreicht ihn, weil es mit network_mode: host laeuft).
+# Timeout 300 s: CPU-Inferenz, erster Aufruf laedt das Modell, ein Neuversuch
+# bei erfundener Uhrzeit verdoppelt die Zeit. Ein HTTP-Fehler kommt als
+# status zurueck, Timeout/Verbindungsfehler als Exception (continue_on_error).
+rest_command:
+  assistent_bericht:
+    url: "http://127.0.0.1:8100/zusammenfassung/{{ art }}"
+    method: get
+    headers:
+      Authorization: !secret assistent_api_auth
+    timeout: 300
+  # Sonntags vor dem Wochenbericht: Weekly Note der naechsten Woche anlegen
+  # (falls sie fehlt) und Vorschlaege aus dem Kalender eintragen. SCHREIBT in
+  # den Vault - nur einfuegen, nie ueberschreiben (assistent/README.md).
+  assistent_vorbereiten:
+    url: "http://127.0.0.1:8100/woche/vorbereiten"
+    method: post
+    headers:
+      Authorization: !secret assistent_api_auth
+    content_type: application/json
+    payload: "{}"
+    timeout: 300
+
+# Assistent-Berichte dauerhaft sichtbar machen (2026-11-14): Der Push allein
+# verschwindet nach dem Wegwischen und schneidet lange Texte ab. Das Skript
+# assistent_bericht_zustellen feuert nach jedem erfolgreichen Bericht das Event
+# assistent_bericht_neu; diese Trigger-Sensoren halten den letzten Bericht
+# (Text als Attribut - ein State fasst nur 255 Zeichen) und ueberleben einen
+# HA-Neustart. Angezeigt im Dashboard "Assistent" (dashboards/assistent.yaml),
+# auf das der Push per clickAction fuehrt. Bewusst NICHT vom Recorder
+# ausgeschlossen: ein Bericht hat ~1-2 KB (Grenze 16 KB) und der Verlauf gibt
+# ein Archiv der letzten ~10 Tage.
+template:
+  - triggers:
+      - trigger: event
+        event_type: assistent_bericht_neu
+        event_data:
+          art: tag
+    sensor:
+      - name: Assistent Tagesbericht
+        unique_id: assistent_tagesbericht
+        icon: mdi:text-box-outline
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          titel: "{{ trigger.event.data.titel }}"
+          text: "{{ trigger.event.data.text }}"
+          datum: "{{ trigger.event.data.datum }}"
+          fallback: "{{ trigger.event.data.fallback }}"
+          modell: "{{ trigger.event.data.modell }}"
+          sekunden: "{{ trigger.event.data.sekunden }}"
+  - triggers:
+      - trigger: event
+        event_type: assistent_bericht_neu
+        event_data:
+          art: woche
+    sensor:
+      - name: Assistent Wochenbericht
+        unique_id: assistent_wochenbericht
+        icon: mdi:calendar-week
+        device_class: timestamp
+        state: "{{ now().isoformat() }}"
+        attributes:
+          titel: "{{ trigger.event.data.titel }}"
+          text: "{{ trigger.event.data.text }}"
+          datum: "{{ trigger.event.data.datum }}"
+          fallback: "{{ trigger.event.data.fallback }}"
+          modell: "{{ trigger.event.data.modell }}"
+          sekunden: "{{ trigger.event.data.sekunden }}"
+
+# Offene Aufgaben der aktuellen Weekly Note fuers Assistent-Dashboard. GET
+# /tasks liest nur den Vault, kein LLM - alle 10 min ist billig. Fehlt die
+# Weekly Note, antwortet die API 404 und der Sensor wird "unavailable".
+rest:
+  - resource: "http://127.0.0.1:8100/tasks"
+    headers:
+      Authorization: !secret assistent_api_auth
+    scan_interval: 600
+    timeout: 30
+    sensor:
+      - name: Assistent offene Aufgaben
+        unique_id: assistent_offene_aufgaben
+        icon: mdi:checkbox-marked-circle-outline
+        unit_of_measurement: Aufgaben
+        value_template: "{{ value_json.tasks | length }}"
+        json_attributes:
+          - kw
+          - datei
+          - tasks
+
+# YAML-Dashboard: die Quelle ist die Datei, nicht .storage - Aenderungen
+# werden beim Neuladen im Browser sichtbar, kein HA-Neustart noetig.
+lovelace:
+  dashboards:
+    dashboard-assistent:
+      mode: yaml
+      filename: dashboards/assistent.yaml
+      title: Assistent
+      icon: mdi:robot-outline
+      show_in_sidebar: true
+      require_admin: false

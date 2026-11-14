@@ -1,0 +1,7 @@
+.env
+vault.env
+*.bak*
+livesync-bridge/src/
+__pycache__/
+.venv/
+.pytest_cache/

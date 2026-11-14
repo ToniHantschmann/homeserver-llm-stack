@@ -1,0 +1,7 @@
+# Nur pyproject.toml, uv.lock und assistent/ gehoeren ins Image.
+# .env NIE ins Image (kommt per env_file), Worktrees/venv/Tests auch nicht.
+*
+!pyproject.toml
+!uv.lock
+!assistent/
+assistent/**/__pycache__

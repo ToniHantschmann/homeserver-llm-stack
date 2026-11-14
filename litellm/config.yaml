@@ -1,0 +1,60 @@
+# LiteLLM-Gateway: EIN OpenAI-kompatibler Endpunkt fuer alle Clients
+# (Assistent, Home Assistant, spaeter Paperless/Mealie).
+# Clients sprechen nur Aliase an - welches Backend dahinter steht, wird hier
+# entschieden und kann ohne Aenderung an den Clients getauscht werden.
+#
+# Aenderungen wirken nach: docker compose restart litellm
+
+model_list:
+  # --- Aliase fuer den Betrieb ---------------------------------------------
+  # Modellwahl nach Phase-1-Messung (bench/BENCHMARKS.md): gemma4:e4b war beim
+  # Tool-Calling 10/10 und am schnellsten. Ein Modell fuer beide Aliase =
+  # nur ein Modell im RAM (OLLAMA_MAX_LOADED_MODELS=1), kein Hin-und-her-Laden.
+  - model_name: assistent
+    litellm_params:
+      model: ollama_chat/gemma4:e4b
+      api_base: http://ollama:11434
+      think: false
+  - model_name: ha-agent
+    litellm_params:
+      model: ollama_chat/gemma4:e4b
+      api_base: http://ollama:11434
+      think: false
+
+  # --- Gruendlich: nur fuer Batch-Aufgaben ohne Latenzanspruch -------------
+  # Wochenbericht (So 19:00) mit Thinking: dort muss das Modell abwaegen, welche
+  # offenen Punkte in die neue Woche sollen. Gleiches Modell wie oben -> kein
+  # Umladen. NIE fuer ha-agent (Sprache braucht < 5 s). Eingefuehrt 2026-11-13.
+  - model_name: assistent-gruendlich
+    litellm_params:
+      model: ollama_chat/gemma4:e4b
+      api_base: http://ollama:11434
+      think: true
+  # qwen3.5:9b mit Thinking wurde am 2026-11-14 getestet und VERWORFEN: >600 s
+  # fuer einen Wochenbericht (6 t/s), und Ollama rechnet einen vom Client
+  # abgebrochenen Request zu Ende - ein Timeout blockierte Ollama ~15 min fuer
+  # alle Aliase (auch ha-agent). Kein Alias auf das 9B anlegen.
+
+  # --- Cloud, nur explizit (Datenschutz: Kalender/Todos bleiben lokal) -------
+  # Nutzbar erst, wenn ANTHROPIC_API_KEY in .env gesetzt ist. Kein Pro-Abo!
+  - model_name: assistent-cloud
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # --- Direktnamen fuer Vergleiche / Benchmarks -------------------------------
+  - model_name: gemma4-e4b
+    litellm_params: {model: ollama_chat/gemma4:e4b, api_base: http://ollama:11434, think: false}
+
+litellm_settings:
+  drop_params: true          # unbekannte Parameter still verwerfen statt 400
+  request_timeout: 600       # CPU-Inferenz: ein Wochenbericht darf dauern
+  # Fallback lokal -> Cloud: am 2026-11-13 vom Operator ENTSCHIEDEN: vorerst
+  # rein lokal. Kein ANTHROPIC_API_KEY, kein Fallback. Der Alias
+  # assistent-cloud bleibt nur als Platzhalter stehen (liefert bis dahin 401).
+  # Bei Reaktivierung: Key in .env, Monatslimit in LiteLLM UND Anthropic-Konsole.
+  # fallbacks: [{"assistent": ["assistent-cloud"]}]
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL

@@ -1,0 +1,9 @@
+# gemma4:e4b
+
+## Tageszusammenfassung (Lauf 1)
+Dein nächster Termin ist das Telefonat Küchenplanung Beispiel GmbH. Du hast außerdem die Mail an das Bürgeramt wegen der Ummeldung überfällig. Nutze das Zeitfenster von 11:45 bis 14:00, um die Seminar-Folien Verteilte Systeme fertig zu machen. Das Zeitfenster von 14:30 bis 18:00 eignet sich gut, um die Literaturübersicht Graphdatenbanken zu ergänzen.
+
+## Tageszusammenfassung (Lauf 2)
+Dein nächster Termin ist das Software-Praktikum um 10:15 Uhr. Bitte beachte, dass die Mail an das Bürgeramt wegen der Ummeldung überfällig ist. Du hast Zeitfenster von 11:45 bis 14:00 und von 14:30 bis 18:00. Nutze das Zeitfenster von 11:45 bis 14:00, um die überfällige Mail zu versenden. Danach könntest du die Seminar-Folien für Verteilte Systeme fertigstellen.
+
+Erfundene Uhrzeiten: keine

@@ -1,0 +1,82 @@
+- id: assistent_bericht
+  alias: Assistent - Tages-/Wochenbericht
+  description: >-
+    06:30 taeglich die Tageszusammenfassung, sonntags 19:00 zusaetzlich den
+    Wochenbericht. Kommt der Bericht nicht (Container weg, Timeout, HTTP-Fehler),
+    nach 2 Minuten ein zweiter Versuch, danach ein Fehler-Push - ein Assistent,
+    der still ausfaellt, faellt sonst erst nach Tagen auf.
+
+    fallback im Ergebnis heisst: das LLM war nicht erreichbar oder hat Uhrzeiten
+    erfunden/Termine weggelassen; dann kommt der nuechterne Faktenblock statt
+    Fliesstext, und der Titel bekommt ein "(Fakten)".
+  triggers:
+  - trigger: time
+    at: '06:30:00'
+    id: tag
+  - trigger: time
+    at: '19:00:00'
+    id: woche
+  conditions:
+  - condition: or
+    conditions:
+    - condition: trigger
+      id: tag
+    - condition: time
+      weekday: sun
+  variables:
+    # Manuell "Ausfuehren" in der UI hat keine trigger.id -> Tagesbericht zum Testen
+    art: "{{ trigger.id | default('tag', true) if trigger is defined else 'tag' }}"
+  actions:
+  # Ablauf (Aufruf, Neuversuch, Fehler-Push, Ablage im Sensor, Push mit Link
+  # aufs Dashboard "Assistent") steckt seit 2026-11-14 in script.assistent_bericht,
+  # damit der Knopf im Dashboard denselben Weg nimmt.
+  - action: script.assistent_bericht
+    data:
+      art: '{{ art }}'
+      push: true
+  mode: single
+
+- id: assistent_woche_vorbereiten
+  alias: Assistent - Weekly Note der naechsten Woche vorbereiten
+  description: >-
+    Sonntags 18:45, eine Viertelstunde vor dem Wochenbericht: fehlt die Weekly
+    Note der naechsten Woche, legt der Assistent sie an und traegt Vorschlaege
+    aus dem Kalender in den Abschnitt "Vorschlaege (Assistent)" ein. Kein Push
+    bei Erfolg - der Wochenbericht um 19:00 nennt die Vorschlaege. Bei Fehler
+    ein zweiter Versuch nach 2 Minuten, danach ein Fehler-Push.
+
+    Der Aufruf ist idempotent: ein zweiter Lauf legt nichts doppelt an, und
+    geloeschte Vorschlaege kommen nicht wieder.
+  triggers:
+  - trigger: time
+    at: '18:45:00'
+  conditions:
+  - condition: time
+    weekday: sun
+  actions:
+  - action: rest_command.assistent_vorbereiten
+    response_variable: antwort
+    continue_on_error: true
+  - if:
+    - condition: template
+      value_template: '{{ not (antwort is defined and antwort.status == 200) }}'
+    then:
+    - delay: '00:02:00'
+    - action: rest_command.assistent_vorbereiten
+      response_variable: antwort2
+      continue_on_error: true
+    - if:
+      - condition: template
+        value_template: '{{ not (antwort2 is defined and antwort2.status == 200) }}'
+      then:
+      - action: notify.mobile_app_phone
+        data:
+          title: Assistent - Wochenvorbereitung fehlgeschlagen
+          message: >-
+            Weekly Note / Kalender-Vorschlaege fuer naechste Woche kamen zweimal
+            nicht zustande
+            ({{ ('HTTP ' ~ antwort2.status ~ ' ' ~ (antwort2.content.meldung | default(''))) if antwort2 is defined else 'keine Antwort / Timeout' }}).
+            Pruefen: docker logs assistent
+          data:
+            tag: assistent_vorbereiten
+  mode: single

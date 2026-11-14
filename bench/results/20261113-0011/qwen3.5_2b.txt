@@ -1,0 +1,9 @@
+# qwen3.5:2b
+
+## Tageszusammenfassung (Lauf 1)
+Freitag, 13.11.2026: Termin heute bis 14:00 Uhr. Überfällig ist ein Mail an das Bürgeramt vom 10.11. Ein konkreter Vorschlag passt die Aufgabe "Literaturübersicht Graphdatenbanken ergänzen" in das freie Fenster von 14:30 bis 18:00, da diese Zeit nach dem Termin am Nachmittag frei ist.
+
+## Tageszusammenfassung (Lauf 2)
+Freitag, 13.11.2026: Vorlesung Datenbanksysteme, Überfällig Mail an Bürgeramt, Vorschlag: Aufgabe "Pfeile beim Bogenladen bestellen" passt ins freie Fenster 14:30-18:00
+
+Erfundene Uhrzeiten: ['10:11']

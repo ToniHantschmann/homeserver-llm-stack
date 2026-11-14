@@ -1,0 +1,129 @@
+# Dashboard "Assistent" (YAML-Modus, eingebunden in configuration.yaml unter
+# lovelace.dashboards). Diese Datei ist die Quelle - Aenderungen werden nach
+# Neuladen im Browser sichtbar, kein HA-Neustart noetig.
+# Der Push des Tagesberichts oeffnet /dashboard-assistent/heute (clickAction
+# in script.assistent_bericht_zustellen) - Pfad nicht umbenennen.
+views:
+  - title: Heute
+    path: heute
+    icon: mdi:robot-outline
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: markdown
+            grid_options:
+              columns: full
+            content: |
+              {% set s = 'sensor.assistent_tagesbericht' %}
+              {% set wt = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+              {% if state_attr(s, 'text') %}
+              {% set erstellt = as_local(as_datetime(states(s))) %}
+              {% set fuer = as_datetime(state_attr(s, 'datum')) %}
+              ## {{ state_attr(s, 'titel') }}
+
+              {% if state_attr(s, 'fallback') %}
+              <ha-alert alert-type="warning">Nur Fakten - das LLM hat keinen brauchbaren Text geliefert ({{ state_attr(s, 'fallback') }}).</ha-alert>
+
+              {% endif %}
+              {% if fuer and fuer.date() != now().date() %}
+              <ha-alert alert-type="info">Dieser Bericht ist für {{ wt[fuer.weekday()] }} {{ fuer.strftime('%d.%m.') }}, nicht für heute.</ha-alert>
+
+              {% endif %}
+              {{ state_attr(s, 'text') }}
+
+              <small>Erstellt {{ wt[erstellt.weekday()] }} {{ erstellt.strftime('%d.%m. %H:%M') }}{% if state_attr(s, 'modell') %} · {{ state_attr(s, 'modell') }} · {{ state_attr(s, 'sekunden') }} s{% endif %}</small>
+              {% else %}
+              ## Tagesbericht
+
+              Noch kein Bericht gespeichert. Der nächste kommt um 06:30, oder unten auf „Tagesbericht neu“ tippen.
+              {% endif %}
+          - type: button
+            name: Tagesbericht neu
+            icon: mdi:refresh
+            grid_options:
+              columns: 6
+              rows: 1
+            show_state: false
+            tap_action:
+              action: perform-action
+              perform_action: script.assistent_bericht
+              data:
+                art: tag
+                push: false
+              confirmation:
+                text: Tagesbericht jetzt neu erstellen? Dauert etwa eine halbe Minute, kein Push.
+          - type: button
+            name: Wochenbericht neu
+            icon: mdi:calendar-refresh
+            grid_options:
+              columns: 6
+              rows: 1
+            show_state: false
+            tap_action:
+              action: perform-action
+              perform_action: script.assistent_bericht
+              data:
+                art: woche
+                push: false
+              confirmation:
+                text: Wochenbericht jetzt neu erstellen? Dauert etwa eine Minute (mit Thinking), kein Push.
+      - type: grid
+        cards:
+          - type: markdown
+            grid_options:
+              columns: full
+            content: |
+              {% set s = 'sensor.assistent_offene_aufgaben' %}
+              {% set wt = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+              {% set t = state_attr(s, 'tasks') %}
+              {% if t is none %}
+              ## Offene Aufgaben
+
+              Keine Weekly Note für diese Woche gefunden (oder der Assistent ist nicht erreichbar).
+              {% else %}
+              ## Offene Aufgaben · KW {{ state_attr(s, 'kw') }}
+
+              {%- set heute = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'][now().weekday()] %}
+              {%- set rest = t | rejectattr('abschnitt', 'in', [heute, 'ToDo']) | list %}
+              {%- set t = t | selectattr('abschnitt', 'in', [heute, 'ToDo']) | list %}
+              {% if t | count == 0 %}
+              Alles erledigt.
+              {% endif %}
+              {%- set ns = namespace(abschnitt=none) %}
+              {%- for x in t %}
+              {%- if x.abschnitt != ns.abschnitt %}
+              {%- set ns.abschnitt = x.abschnitt %}
+
+              **{{ x.abschnitt }}**
+              {% endif %}
+              {{ '  ' * (x.ebene | int(0)) }}- {{ x.text }}{% if x.faellig %} · _fällig {{ wt[as_datetime(x.faellig).weekday()] }} {{ as_datetime(x.faellig).strftime('%d.%m.') }}_{% endif %}
+              {%- endfor %}
+              {% if rest %}
+
+              <small>+ {{ rest | count }} offen in anderen Tagesabschnitten der Weekly Note</small>
+              {% endif %}
+              {% endif %}
+          - type: markdown
+            grid_options:
+              columns: full
+            content: |
+              {% set s = 'sensor.assistent_wochenbericht' %}
+              {% set wt = ['Mo','Di','Mi','Do','Fr','Sa','So'] %}
+              {% if state_attr(s, 'text') %}
+              {% set erstellt = as_local(as_datetime(states(s))) %}
+              ## {{ state_attr(s, 'titel') }}
+
+              {% if state_attr(s, 'fallback') %}
+              <ha-alert alert-type="warning">Nur Fakten - das LLM hat keinen brauchbaren Text geliefert ({{ state_attr(s, 'fallback') }}).</ha-alert>
+
+              {% endif %}
+              {{ state_attr(s, 'text') }}
+
+              <small>Erstellt {{ wt[erstellt.weekday()] }} {{ erstellt.strftime('%d.%m. %H:%M') }}{% if state_attr(s, 'modell') %} · {{ state_attr(s, 'modell') }} · {{ state_attr(s, 'sekunden') }} s{% endif %}</small>
+              {% else %}
+              ## Wochenbericht
+
+              Noch keiner gespeichert - kommt sonntags um 19:00.
+              {% endif %}

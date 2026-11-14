@@ -1,0 +1,21 @@
+== llama-server ohne Draft
+llama-server  lauf 1: prompt 75.3 t/s  gen 9.9 t/s  wall 25.7s 
+llama-server  lauf 2: prompt 74.9 t/s  gen 9.9 t/s  wall 25.7s 
+llama-server  lauf 3: prompt 75.0 t/s  gen 9.8 t/s  wall 25.8s 
+llama-server  MEDIAN gen 9.9 t/s
+RAM llama-server: 2.352GiB / 31.09GiB
+== llama-server mit Draft (gemma4-assistant, MTP)
+llama-server+draft  lauf 1: prompt 73.4 t/s  gen 19.5 t/s  wall 15.9s draft=217/126
+llama-server+draft  lauf 2: prompt 75.1 t/s  gen 19.4 t/s  wall 15.8s draft=217/126
+llama-server+draft  lauf 3: prompt 75.0 t/s  gen 19.5 t/s  wall 15.8s draft=217/126
+llama-server+draft  MEDIAN gen 19.5 t/s
+RAM llama-server+draft: 2.068GiB / 31.09GiB
+0.19.023.540 I slot print_timing: id  0 | task 0 | draft acceptance = 0.58065 (  126 accepted /   217 generated), mean len =  2.73
+0.34.821.329 I slot print_timing: id  0 | task 77 | draft acceptance = 0.58065 (  126 accepted /   217 generated), mean len =  2.73
+0.50.592.332 I slot print_timing: id  0 | task 154 | draft acceptance = 0.58065 (  126 accepted /   217 generated), mean len =  2.73
+== Ollama (nutzt Draft automatisch)
+ollama  lauf 1: prompt 131.2 t/s  gen 20.1 t/s  wall 13.2s 
+ollama  lauf 2: prompt 2425.1 t/s  gen 19.3 t/s  wall 5.5s 
+ollama  lauf 3: prompt 2489.4 t/s  gen 18.3 t/s  wall 5.7s 
+ollama  MEDIAN gen 19.3 t/s
+RAM ollama: 6.737GiB / 10GiB
