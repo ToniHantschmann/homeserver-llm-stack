@@ -173,13 +173,48 @@ select model_group, count(*),
 from "LiteLLM_SpendLogs" where status = 'success' group by 1;
 ```
 
+## 7. Keeping the model resident (22 Nov 2026)
+
+One model behind all aliases did **not** mean no reloads. Home Assistant's Ollama
+integration sends `num_ctx=8192`, LiteLLM requests ran at the server default 4096, and
+Ollama starts a separate runner per context size. With `MAX_LOADED_MODELS=1` every switch
+between voice and a report evicted the other, and `keep_alive=5m` unloaded it on top.
+The voice log showed 3 of 15 commands at ~27 s instead of ~1 s.
+
+Most of that time is not loading. HA's system prompt plus tool definitions is ~2,600
+tokens; on a cold cache it has to be evaluated in full, on a warm one Ollama reuses the
+cached prefix.
+
+Fix: `OLLAMA_CONTEXT_LENGTH=8192` (same as HA), `OLLAMA_KEEP_ALIVE=-1`,
+`OLLAMA_NUM_PARALLEL=2`. The second parallel slot is the important part: with one slot a
+report overwrites the voice prefix in the KV cache, with two Ollama picks the slot with the
+longest matching prefix.
+
+Replaying a real HA voice request (2,585 prompt tokens) directly against Ollama:
+
+| Step | Total | Load | Prompt eval |
+|---|---|---|---|
+| voice, cold (after container restart) | 43 s | 7.0 s | 34.9 s |
+| voice, warm | 1.2 s | 0 s | 0.12 s |
+| daily report | 11.6 s | | |
+| voice right after | **1.2 s** | 0 s | 0.12 s |
+| weekly report (thinking) | 112 s ¹ | | |
+| voice right after | **1.2 s** | 0 s | 0.13 s |
+
+¹ 79 s thinking run plus a 31 s re-phrase with `assistent`, because validation caught a
+calendar entry missing from the thinking output. Unrelated to this change; the thinking
+run alone matches 15 Nov (80 s).
+
+`ollama ps` reports 2.1 GB for the loaded model; the container's cgroup shows 7.4 of
+10 GiB including page cache of the mmapped weights.
+
 ## Decisions that came out of this
 
-- **One model (`gemma4:e4b`) behind all aliases.** With `MAX_LOADED_MODELS=1`
-  there is never a model swap; voice, daily and weekly report share one loaded model.
+- **One model (`gemma4:e4b`) behind all aliases**, kept loaded permanently. That
+  only avoids reloads if every client uses the same context size, see section 7.
 - **6 threads.** More buys nothing for generation and steals CPU from other services.
-- **RAM is the price:** 6.7 GB instead of 3.6 GB, acceptable because `keep_alive=5m`
-  unloads it again, and alongside Minecraft (9.4 GB) ~8 GB stay free.
+- **RAM is the price:** 6.7 GB instead of 3.6 GB. Since 22 Nov it stays loaded
+  (`keep_alive=-1`); alongside Minecraft (9.4 GB) ~11 GB remain available.
 - **The 2 B model is not a useful lower bound** for voice: Gemma 4 E4B is faster *and* better.
   `gemma4:e2b` would be the remaining candidate (not measured).
 
